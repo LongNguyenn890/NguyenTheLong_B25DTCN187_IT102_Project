@@ -185,7 +185,7 @@ void updateInfor() {
 	fgets(name,sizeof(name),stdin);
 	name[strcspn(name,"\n")] = 0;
 	if (strcmp(name,"") == 0) {
-		printf("Thong tin duoc giu nguyen !!!");
+		printf("Thong tin duoc giu nguyen !!!\n");
 	} else {
 		strcpy(accountList[found].fullName,name);
 	}
@@ -200,7 +200,7 @@ void updateInfor() {
 	 			isDuplicate = 1;
 	 			break;
 			 }
-		if (isDuplicate) {
+		if (isDuplicate == 1) {
 			printf("SDT khong duoc trung voi tai khoan khac - Vui long nhap lai SDT !!!\n");
 			continue;
 		} 
