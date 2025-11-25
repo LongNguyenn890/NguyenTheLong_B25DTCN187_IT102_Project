@@ -36,12 +36,14 @@ struct Transaction transList[MAX] = {
 };
 int transSize = 5;
 
-int size;
+
 
 
 void addAccount();
 void updateInfor();
 void lockAccount();
+void searchAccount();
+void showPagination();
 
 int main() {
 	int choice;
@@ -70,6 +72,12 @@ int main() {
 				break;
 			case 3:
 				lockAccount();
+				break;
+			case 4:
+				searchAccount();
+				break;
+			case 5:
+				showPagination();
 				break;
 		}
 		
@@ -196,7 +204,7 @@ void updateInfor() {
 			printf("SDT khong duoc trung voi tai khoan khac - Vui long nhap lai SDT !!!\n");
 			continue;
 		} 
- 		if (strlen(accountList[accountSize].phone) < 10 || strlen(accountList[accountSize].phone) > 10) {
+ 		if (strlen(accountList[accountSize].phone) != 10) {
  			printf("SDT khong hop le - Vui long nhap 10 so !!!\n");
  			continue;
 		 }
@@ -220,7 +228,7 @@ void lockAccount() {
 		}
 	}
 	if (found == -1) {
-		printf("Khong tim thay tai khoan !!!\n");
+		printf("Loi khong tim thay tai khoan !!!\n");
 		return;
 	}
 	printf("\n+---------------------Thong tin hien tai---------------------+\n");
@@ -232,11 +240,65 @@ void lockAccount() {
 	
 	char confirm;
 	printf("Xac nhan khoa tai khoan (y/n): ");
-	scanf("%c",&confirm);
+	confirm = getchar();
 	if (confirm == 'Y' || confirm == 'y') {
 		accountList[found].status = 0;
 		printf("Da khoa tai khoan thanh cong !!!\n");
 	} else if (confirm == 'N' || confirm == 'n') {
 		printf("Huy thao tac !!!\n");
 	}	
+}
+
+//Tim kiem 
+void searchAccount() {
+	char id[20];
+	int found = -1;
+	printf("Nhap Ma ID: ");
+	fgets(id,sizeof(id),stdin);
+	id[strcspn(id,"\n")] = 0;
+	for (int i = 0; i < accountSize; i++) {
+		
+		if (strcmp(id,accountList[i].accountId) == 0) {
+			found = i;
+			break;
+		}
+	}
+	if (found == - 1) {
+		printf("Khong co ket qua phu hop !!!\n");
+		return;
+	}
+	printf("\n+----------+------------------------------+----------+--------------------+----------+\n");
+	printf("|%-10s|%-30s|%-10s|%-20s|%-10s|\n","Ma ID","Ho va Ten","SDT","So du tai khoan","Trang thai");
+	printf("+----------+------------------------------+----------+--------------------+----------+\n");
+	printf("|%-10s|%-30s|%-10s|%-20.2f|%-10d|\n",accountList[found].accountId,accountList[found].fullName,accountList[found].phone,accountList[found].balance,accountList[found].status);
+	printf("+----------+------------------------------+----------+--------------------+----------+\n");
+	
+}
+
+// Danh sach trang
+void showPagination() {
+	int page_number = 0, page_size = 10;
+	int page = accountSize / page_size;
+	int total_pages = (accountSize % page_size == 0) ? page: page + 1;
+	while (1) {
+		printf("Nhap so trang (1 - %d): ",total_pages);
+		scanf("%d",&page_number);
+		if (page_number < 0 || page_number > total_pages) {
+			printf("Loi du lieu khong hop le !!\n");
+			continue;
+		}
+		break;
+	}
+	int start = (page_number - 1) * page_size;
+	int end = start + page_size;
+	printf("\n+--------------------------------------Trang %d/%d-------------------------------------+\n",page_number,total_pages);
+	printf("\n+----------+------------------------------+----------+--------------------+----------+\n");
+	printf("|%-10s|%-30s|%-10s|%-20s|%-10s|\n","Ma ID","Ho va Ten","SDT","So du tai khoan","Trang thai");
+	for (int i = start; i < end; i++) {
+		printf("+----------+------------------------------+----------+--------------------+----------+\n");
+	printf("|%-10s|%-30s|%-10s|%-20.2f|%-10d|\n",accountList[i].accountId,accountList[i].fullName,accountList[i].phone,accountList[i].balance,accountList[i].status);
+	}
+	
+	printf("+----------+------------------------------+----------+--------------------+----------+\n");
+	
 }
