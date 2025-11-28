@@ -183,6 +183,7 @@ int main() {
 
 // Them tai khoan
 void addAccount() {
+	int isDigit;
 	if (accountSize >= MAX) {
 		printf("Danh sach da day !!!");
 		return;
@@ -229,7 +230,20 @@ void addAccount() {
  		if (strlen(accountList[accountSize].phone) == 0) {
  			printf("SDT khong duoc de trong - Vui long nhap SDT !!!\n");
  			continue;
-		 }
+		}
+		 
+		isDigit = 1;
+		for (int i = 0; i < strlen(accountList[accountSize].phone); i++) {
+			if (!isdigit(accountList[accountSize].phone[i])) {
+				isDigit = 0;
+				break;
+			}
+		}
+		if (isDigit == 0) {
+			printf("SDT chi duoc phep nhap so !!\n");
+			continue;
+		}
+		
  		if (strlen(accountList[accountSize].phone) < 10 || strlen(accountList[accountSize].phone) > 10) {
  			printf("SDT khong hop le - Vui long nhap 10 so !!!\n");
  			continue;
@@ -246,6 +260,7 @@ void addAccount() {
 void updateInfor() {
 	char id[20];
 	int found = -1;
+	int isDigit;
 	while (1) {
 		printf("Nhap Ma ID: ");
 		fgets(id,sizeof(id),stdin);
@@ -274,27 +289,43 @@ void updateInfor() {
 	printf("Nhap Ho va Ten: ");
 	fgets(name,sizeof(name),stdin);
 	name[strcspn(name,"\n")] = 0;
-	if (strcmp(name,"") == 0) {
-		
-	} else {
+	if (strlen(name) > 0) {
 		strcpy(accountList[found].fullName,name);
 	}
 	
 	while (1) {
 		printf("Nhap SDT: ");
-		fgets(accountList[accountSize].phone,sizeof(accountList[accountSize].phone),stdin);
- 		accountList[accountSize].phone[strcspn(accountList[accountSize].phone,"\n")] = 0;
+		fgets(accountList[found].phone,sizeof(accountList[found].phone),stdin);
+ 		accountList[found].phone[strcspn(accountList[found].phone,"\n")] = 0;
+ 		
+ 		isDigit = 1;
+		for (int i = 0; i < strlen(accountList[found].phone); i++) {
+			if (!isdigit(accountList[found].phone[i])) {
+				isDigit = 0;
+				break;
+			}
+		}
+		if (isDigit == 0) {
+			printf("SDT chi duoc phep nhap so !!\n");
+			continue;
+		}
+		
  		int isDuplicate = 0;
- 		for (int i = 0; i < accountSize; i++)
-	 		if (strcmp(accountList[accountSize].phone,accountList[i].phone) == 0) {
+ 		for (int i = 0; i < accountSize; i++) {
+ 			if (i == found) {
+ 				continue;
+			}
+	 		if (strcmp(accountList[found].phone,accountList[i].phone) == 0) {
 	 			isDuplicate = 1;
 	 			break;
-			 }
+			} 
+		}
 		if (isDuplicate == 1) {
 			printf("SDT khong duoc trung voi tai khoan khac - Vui long nhap lai SDT !!!\n");
 			continue;
 		} 
- 		if (strlen(accountList[accountSize].phone) != 10) {
+		
+ 		if (strlen(accountList[found].phone) != 10) {
  			printf("SDT khong hop le - Vui long nhap 10 so !!!\n");
  			continue;
 		 }
@@ -335,15 +366,22 @@ void lockAccount() {
 		printf("Tai khoan da bi khoa !!!\n");
 		return;
 	}
-	char confirm;
-	printf("Xac nhan khoa tai khoan (y/n): ");
-	confirm = getchar();
-	if (confirm == 'Y' || confirm == 'y') {
-		accountList[found].status = 0;
-		printf("Da khoa tai khoan thanh cong !!!\n");
-	} else if (confirm == 'N' || confirm == 'n') {
-		printf("Huy thao tac !!!\n");
-	}	
+	while (1) {
+		char confirm;
+		printf("Xac nhan khoa tai khoan (y/n): ");
+		confirm = getchar();
+		fflush(stdin);
+		if (confirm == 'Y' || confirm == 'y') {
+			accountList[found].status = 0;
+			printf("Da khoa tai khoan thanh cong !!!\n");
+			return;
+		} else if (confirm == 'N' || confirm == 'n') {
+			printf("Huy thao tac !!!\n");
+			return;
+		} else {
+			printf("Vui long nhap (y/n) !!!\n");
+		}
+	}
 }
 
 //Chuyen thanh chu thuong
@@ -552,14 +590,15 @@ void transferMoney() {
 				foundSenderID = i;
 				break;
 			}
-			if (accountList[i].status == 0) {
-				printf("Tai khoan da bi dung hoat dong !!\n");
-				break;
-			}
 		}
 		if (foundSenderID == -1) {
 			printf("Khong tim thay tai khoan !!\n");
 			continue;
+		}
+		
+		if (accountList[foundSenderID].status == 0) {
+			printf("Tai khoan da bi khoa - Khong the thuc hien gia dich !!\n");
+			return;
 		}
 		break;	
 	}
@@ -589,6 +628,10 @@ void transferMoney() {
 		if (strcmp(receiverId,senderId) == 0) {
 			printf("ID nguoi nhan trung voi ID nguoi gui - Vui long nhap lai !!\n");
 			continue;
+		}
+		if (accountList[foundReceiverID].status == 0) {
+			printf("Tai khoan da bi khoa - Khong the thuc hien giao dich !!\n");
+			return;
 		}
 		break;
 	}
@@ -636,10 +679,11 @@ void viewTransactionHistory() {
 		fgets(targetId,sizeof(targetId),stdin);
 		targetId[strcspn(targetId,"\n")] = 0;
 		
-		if (strcmp(targetId,"") == 0) {
+		if (strlen(targetId) == 0) {
 			printf("Vui long nhap Ma tai khoan !!\n");
 			continue;
 		}
+		// Kiem tra tai khoan co ton tai ko ?
 		foundId = -1;
 		for (int i = 0; i < accountSize; i++) {
 			if (strcmp(targetId,accountList[i].accountId) == 0) {
@@ -651,6 +695,8 @@ void viewTransactionHistory() {
 			printf("Tai khoan khong ton tai !!\n");
 			continue;
 		}
+		
+		// Kiem tra giao dich
 		foundTrans = 0;
 		for (int j = 0; j < transSize; j++) {
 			 if (strcmp(targetId, transList[j].senderId) == 0 || strcmp(targetId, transList[j].receiverId) == 0) {
@@ -660,19 +706,31 @@ void viewTransactionHistory() {
 		}
 		if (foundTrans == 0) {
 			printf("He thong chua co giao dich nao !!\n");
-			continue;
+			return;
 		}
-		
 		break;
 	}
-	printf("+------------+------------+-------------+----------+------------+--------------------+\n");
-	printf("|%-12s|%-12s|%-12s|%-10s|%-12s|%-20s|\n","Ma giao dich","Ma nguoi gui","Ma nguoi nhan","So tien","Trang thai","Ngay thang");
-	printf("+------------+------------+-------------+----------+------------+--------------------+\n");
+	printf("+------------+------------+-------------+--------------+--------------+--------------------+\n");
+	printf("|%-12s|%-12s|%-13s|%-14s|%-14s|%-20s|\n","Ma giao dich","Ma nguoi gui","Ma nguoi nhan","Tien gui","Tien nhan","Trang thai","Ngay thang");
+	printf("+------------+------------+-------------+--------------+--------------+--------------------+\n");
 	for (int k = 0; k < transSize; k++) {
 		if (strcmp(targetId, transList[k].senderId) == 0 || strcmp(targetId, transList[k].receiverId) == 0) {
-			printf("|%-12s|%-12s|%-13s|%-10.2lf|%-12s|%-20s|\n",transList[k].transId,transList[k].senderId,transList[k].receiverId,transList[k].amount,transList[k].type,transList[k].date);	
-		} 
-		
+			
+			double moneySend = 0;
+            double moneyReceive = 0;
+
+            if (strcmp(targetId, transList[k].senderId) == 0) {
+            	moneySend = transList[k].amount;
+            	strcpy(transList[k].type,"DA GUI");
+			}
+                
+            if (strcmp(targetId, transList[k].receiverId) == 0) {
+            	moneyReceive = transList[k].amount;
+            	strcpy(transList[k].type,"DA NHAN");
+			}
+                
+			printf("|%-12s|%-12s|%-13s|%-14.2lf|%-14.2lf|%-20s|\n",transList[k].transId,transList[k].senderId,transList[k].receiverId,moneySend,moneyReceive,transList[k].type,transList[k].date);	
+		} 	
 	}
-	printf("+------------+------------+-------------+----------+------------+--------------------+\n");
+	printf("+------------+------------+-------------+--------------+--------------+--------------------+\n");
 }
